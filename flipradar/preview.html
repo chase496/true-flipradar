@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FlipRadar — Preview</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy: { 950:'#020810', 900:'#050D1A', 800:'#091526', 700:'#0E2040', 600:'#162D54', 500:'#1E3D6E' },
+        green: { 400:'#33FFa0', 500:'#00FF88', 600:'#00CC6A' },
+        card:'#0B1929', border:'#1A2E4A'
+      },
+      fontFamily: { sans:['Inter','sans-serif'], mono:['JetBrains Mono','monospace'] }
+    }
+  }
+}
+</script>
+<style>
+body { background:#050D1A; color:white; font-family:'Inter',sans-serif; }
+.stream-content h2 { font-size:1.1rem; font-weight:700; color:white; margin:1.5rem 0 .75rem; padding-bottom:.5rem; border-bottom:1px solid #1A2E4A; }
+.stream-content strong { color:white; font-weight:600; }
+.stream-content p { color:#94a3b8; line-height:1.7; margin-bottom:.75rem; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const FEED = [
+  { id:'fw1', name:'Posture Corrector Belt', niche:'Health & Wellness', flipScore:8, estimatedMargin:'48-58%', competitionLevel:'Medium', trendDirection:'Rising', avgCostPrice:'$4-7', avgSellPrice:'$19-28', pitch:'Remote work boom created millions of new back-pain sufferers — demand is structural, not cyclical', supplierTip:'Search CJDropshipping for posture corrector FDA to find certifiable variants for premium pricing' },
+  { id:'fw2', name:'Red Light Therapy Wand', niche:'Health & Wellness', flipScore:9, estimatedMargin:'55-65%', competitionLevel:'Low', trendDirection:'Rising', avgCostPrice:'$12-18', avgSellPrice:'$45-79', pitch:"TikTok's wellness community is driving massive organic reach — influencer seeding costs $0 if you target micro-creators", supplierTip:'Alibaba MOQ of 50 units unlocks white-label with your logo for $14/unit' },
+  { id:'fw3', name:'Collagen Gua Sha Stone Set', niche:'Health & Wellness', flipScore:7, estimatedMargin:'60-70%', competitionLevel:'Medium', trendDirection:'Stable', avgCostPrice:'$2-4', avgSellPrice:'$12-22', pitch:'High-margin gift item that bundles well — 3-piece kits sell for 3x the sum of parts', supplierTip:'AliExpress sellers with 1000+ reviews and 4.7+ rating in jade/rose quartz niche' },
+  { id:'hk1', name:'Magnetic Cable Organiser', niche:'Home & Kitchen', flipScore:7, estimatedMargin:'50-60%', competitionLevel:'Low', trendDirection:'Rising', avgCostPrice:'$3-6', avgSellPrice:'$14-22', pitch:'Desk setup culture is massive on YouTube and TikTok — this product photographs beautifully for organic content', supplierTip:'Look for silicone variants on CJDropshipping — they have 3x fewer returns than plastic' },
+  { id:'hk2', name:'Self-Watering Plant Pot Set', niche:'Home & Kitchen', flipScore:8, estimatedMargin:'45-55%', competitionLevel:'Medium', trendDirection:'Stable', avgCostPrice:'$5-9', avgSellPrice:'$22-38', pitch:'Plant parent demographic is highly engaged and repeat-buys — one customer = 3-4 lifetime orders', supplierTip:'Source ceramic variants from Alibaba at 100 MOQ to differentiate from plastic competitors on Amazon' },
+  { id:'hk3', name:'Digital Kitchen Scale 0.1g', niche:'Home & Kitchen', flipScore:6, estimatedMargin:'35-45%', competitionLevel:'High', trendDirection:'Stable', avgCostPrice:'$6-10', avgSellPrice:'$18-26', pitch:'High-precision scales found new audience in home baking and supplement measuring post-COVID', supplierTip:'Bundle with a recipe card PDF for premium positioning and avoid the commodity race' },
+  { id:'ta1', name:'MagSafe Ring Phone Grip', niche:'Tech Accessories', flipScore:9, estimatedMargin:'60-72%', competitionLevel:'Low', trendDirection:'Rising', avgCostPrice:'$2-4', avgSellPrice:'$12-20', pitch:'Every iPhone 12+ user is a potential customer — magnetic accessories are exploding', supplierTip:'CJDropshipping stocks MagSafe-compatible variants — verify compatibility list before ordering samples' },
+  { id:'ta2', name:'65W GaN Charger 3-port', niche:'Tech Accessories', flipScore:8, estimatedMargin:'40-50%', competitionLevel:'Medium', trendDirection:'Rising', avgCostPrice:'$8-14', avgSellPrice:'$28-42', pitch:'GaN is replacing standard chargers fast — early market with room for new brands', supplierTip:'Alibaba suppliers with UL certification are non-negotiable — avoid uncertified units, liability risk is real' },
+  { id:'ta3', name:'Cable Management Box', niche:'Tech Accessories', flipScore:7, estimatedMargin:'52-62%', competitionLevel:'Low', trendDirection:'Rising', avgCostPrice:'$5-9', avgSellPrice:'$22-35', pitch:'WFH setup obsession drives this — people are actively searching for desk cable solutions', supplierTip:'Wood-grain variants command 40% price premium over plastic — source from AliExpress bamboo suppliers' },
+  { id:'pp1', name:'Slow Feeder Dog Bowl', niche:'Pet Products', flipScore:8, estimatedMargin:'55-65%', competitionLevel:'Low', trendDirection:'Rising', avgCostPrice:'$3-6', avgSellPrice:'$15-24', pitch:'Vet-recommended product with zero marketing needed — dog owners buy on vet advice and Amazon reviews alone', supplierTip:'Look for BPA-free certified silicone variants on CJDropshipping' },
+  { id:'pp2', name:'Interactive Cat Feather Wand', niche:'Pet Products', flipScore:7, estimatedMargin:'65-75%', competitionLevel:'Low', trendDirection:'Stable', avgCostPrice:'$1-3', avgSellPrice:'$8-16', pitch:'Insane margin on a product with zero seasonality — cat owners buy multiple replacements per year', supplierTip:'Bundle 3 wand heads for a kit that justifies $15+ pricing vs $8 for single units' },
+  { id:'pp3', name:'GPS Pet Tracker Clip', niche:'Pet Products', flipScore:9, estimatedMargin:'45-58%', competitionLevel:'Medium', trendDirection:'Rising', avgCostPrice:'$9-15', avgSellPrice:'$29-48', pitch:'Fear of losing a pet is a powerful buying trigger — GPS tracker adds urgency and justifies premium pricing', supplierTip:'Partner with a monthly subscription SIM plan to generate recurring revenue beyond the hardware sale' },
+];
+
+const NICHES = ['All','Health & Wellness','Home & Kitchen','Tech Accessories','Pet Products'];
+const PLATFORMS = {
+  ebay:    { name:'eBay',    feePercent:0.129, fixedFee:0.30,  desc:'12.9% + $0.30',  color:'#facc15' },
+  amazon:  { name:'Amazon',  feePercent:0.15,  fixedFee:3.99,  desc:'15% + $3.99 FBA', color:'#fb923c' },
+  shopify: { name:'Shopify', feePercent:0.029, fixedFee:0.30,  desc:'2.9% + $0.30',   color:'#a78bfa' },
+};
+
+function ScoreBadge({ score }) {
+  const n = Number(score);
+  const cls = n >= 8 ? 'text-green-500 border-green-500/40 bg-green-500/10' : n >= 5 ? 'text-yellow-400 border-yellow-400/40 bg-yellow-400/10' : 'text-red-400 border-red-400/40 bg-red-400/10';
+  return <div className={`inline-flex items-center justify-center rounded-lg border font-mono text-sm font-bold px-2.5 py-1 min-w-[44px] ${cls}`}>{n}<span className="text-[0.6em] ml-0.5 opacity-70">/10</span></div>;
+}
+
+function ProductCard({ p }) {
+  const trendColor = p.trendDirection === 'Rising' ? 'text-green-500' : p.trendDirection === 'Declining' ? 'text-red-400' : 'text-slate-400';
+  const compColor = p.competitionLevel === 'Low' ? 'text-green-500 bg-green-500/10' : p.competitionLevel === 'High' ? 'text-red-400 bg-red-400/10' : 'text-yellow-400 bg-yellow-400/10';
+  return (
+    <div style={{background:'#0B1929',border:'1px solid #1A2E4A'}} className="rounded-xl p-5 flex flex-col gap-3 hover:border-green-500/30 transition-all">
+      <div className="flex items-start justify-between gap-3">
+        <div><h3 className="font-semibold text-white text-sm leading-snug">{p.name}</h3><span className="text-xs text-slate-500">{p.niche}</span></div>
+        <ScoreBadge score={p.flipScore}/>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div><p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Margin</p><p className="font-mono font-semibold text-green-500 text-xs mt-1">{p.estimatedMargin}</p></div>
+        <div><p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Competition</p><p className={`text-xs font-semibold mt-1 px-2 py-0.5 rounded-full inline-block font-mono ${compColor}`}>{p.competitionLevel}</p></div>
+        <div className="text-right"><p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Trend</p><p className={`text-xs font-semibold mt-1 ${trendColor}`}>{p.trendDirection}</p></div>
+      </div>
+      <div style={{background:'#091526'}} className="flex items-center gap-2 rounded-lg px-3 py-2">
+        <div className="flex-1 text-center"><p className="text-[10px] text-slate-500 uppercase">Cost</p><p className="font-mono font-semibold text-slate-300 text-xs">{p.avgCostPrice}</p></div>
+        <span className="text-slate-600">→</span>
+        <div className="flex-1 text-center"><p className="text-[10px] text-slate-500 uppercase">Sell</p><p className="font-mono font-semibold text-white text-xs">{p.avgSellPrice}</p></div>
+      </div>
+      <p className="text-slate-400 text-xs leading-relaxed border-l-2 border-green-500/40 pl-3 italic">{p.pitch}</p>
+      <div style={{background:'rgba(9,21,38,0.6)'}} className="rounded-lg px-3 py-2">
+        <p className="text-[10px] font-medium text-green-500 uppercase tracking-wider mb-1">Supplier Tip</p>
+        <p className="text-xs text-slate-400">{p.supplierTip}</p>
+      </div>
+    </div>
+  );
+}
+
+function Dashboard() {
+  const [niche, setNiche] = useState('All');
+  const filtered = FEED.filter(p => niche === 'All' || p.niche === niche);
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">🔥 Today's Winning Products</h1>
+          <p className="text-slate-400 text-sm mt-1">AI-curated daily feed — refreshes every 24 hours</p>
+        </div>
+        <div style={{background:'rgba(0,255,136,0.05)',border:'1px solid rgba(0,255,136,0.2)'}} className="text-xs text-green-500 px-3 py-1.5 rounded-lg font-medium">Mock Data — Connect backend for live AI feed</div>
+      </div>
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {NICHES.map(n => <button key={n} onClick={() => setNiche(n)} style={niche===n?{background:'rgba(0,255,136,0.1)',border:'1px solid rgba(0,255,136,0.3)',color:'#00FF88'}:{border:'1px solid #1A2E4A',color:'#94a3b8'}} className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all">{n}</button>)}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map(p => <ProductCard key={p.id} p={p}/>)}
+      </div>
+    </div>
+  );
+}
+
+function Calculator() {
+  const [cost, setCost] = useState('');
+  const [ship, setShip] = useState('');
+  const [sell, setSell] = useState('');
+  const [plat, setPlat] = useState('ebay');
+
+  const c = parseFloat(cost)||0, s = parseFloat(ship)||0, sp = parseFloat(sell)||0;
+  const p = PLATFORMS[plat];
+  const fee = sp * p.feePercent + p.fixedFee;
+  const profit = sp - c - s - fee;
+  const margin = sp > 0 ? (profit/sp)*100 : 0;
+  const roi = (c+s) > 0 ? (profit/(c+s))*100 : 0;
+  const hasData = c > 0 && sp > 0;
+  const fmt = v => '$' + Math.abs(v).toFixed(2);
+  const mColor = margin >= 30 ? '#00FF88' : margin >= 10 ? '#facc15' : '#f87171';
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold text-white mb-1">💰 Profit Calculator</h1>
+      <p className="text-slate-400 text-sm mb-8">Real platform fees — know your true margin before you list</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div style={{background:'#0B1929',border:'1px solid #1A2E4A'}} className="rounded-xl p-6 flex flex-col gap-5">
+          {[['Product Cost','cost',cost,setCost,'4.00'],['Shipping Cost','ship',ship,setShip,'1.50'],['Sell Price','sell',sell,setSell,'24.99']].map(([label,_,val,fn,ph]) => (
+            <div key={label}>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">{label}</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm">$</span>
+                <input type="number" value={val} onChange={e=>fn(e.target.value)} placeholder={ph} style={{background:'#091526',border:'1px solid #1A2E4A',borderRadius:'8px'}} className="w-full pl-7 pr-4 py-3 text-white font-mono focus:outline-none focus:border-green-500"/>
+              </div>
+            </div>
+          ))}
+          <div>
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-2">Platform</label>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(PLATFORMS).map(([key,pl]) => (
+                <button key={key} onClick={()=>setPlat(key)} style={plat===key?{border:'1px solid rgba(0,255,136,0.5)',background:'rgba(0,255,136,0.08)'}:{border:'1px solid #1A2E4A'}} className="py-2.5 px-2 rounded-lg text-center transition-all">
+                  <p className="text-sm font-medium" style={{color:pl.color}}>{pl.name}</p>
+                  <p className="text-[10px] text-slate-500 font-mono mt-0.5">{pl.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-4">
+          {hasData ? (<>
+            <div className="grid grid-cols-2 gap-3">
+              <div style={{background:'#0B1929',border:'1px solid #1A2E4A'}} className="rounded-xl p-4">
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Net Profit</p>
+                <p className="font-mono font-bold text-3xl" style={{color:profit>=0?'#00FF88':'#f87171'}}>{profit>=0?'':'-'}{fmt(profit)}</p>
+              </div>
+              <div style={{background:'#0B1929',border:'1px solid #1A2E4A'}} className="rounded-xl p-4">
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Margin</p>
+                <p className="font-mono font-bold text-3xl" style={{color:mColor}}>{margin.toFixed(1)}%</p>
+              </div>
+            </div>
+            <div style={{background:'#0B1929',border:'1px solid #1A2E4A'}} className="rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-white mb-3">Breakdown</h3>
+              {[['Sell Price',fmt(sp),'white'],['Product Cost','- '+fmt(c),'#f87171'],['Shipping Cost','- '+fmt(s),'#f87171'],[`${p.name} Fee`,'- '+fmt(fee),'#f87171']].map(([l,v,col])=>(
+                <div key={l} className="flex justify-between items-center text-sm py-1.5 border-b border-slate-800 last:border-0">
+                  <span className="text-slate-400">{l}</span>
+                  <span className="font-mono font-medium" style={{color:col}}>{v}</span>
+                </div>
+              ))}
+              <div className="flex justify-between items-center pt-2 mt-1">
+                <span className="font-semibold text-white text-sm">Net Profit</span>
+                <span className="font-mono font-bold" style={{color:profit>=0?'#00FF88':'#f87171'}}>{profit>=0?'':'-'}{fmt(profit)}</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div style={{background:'#0B1929',border:'1px solid #1A2E4A'}} className="rounded-xl p-4">
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">ROI</p>
+                <p className="font-mono font-bold text-xl" style={{color:roi>=30?'#00FF88':'#94a3b8'}}>{roi.toFixed(0)}%</p>
+              </div>
+              <div style={{background:'#0B1929',border:'1px solid #1A2E4A'}} className="rounded-xl p-4">
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Break-even</p>
+                <p className="font-mono font-bold text-xl text-slate-300">${(c+s+fee).toFixed(2)}</p>
+              </div>
+            </div>
+          </>) : (
+            <div style={{background:'#0B1929',border:'1px solid #1A2E4A'}} className="rounded-xl p-10 text-center flex flex-col items-center justify-center h-full">
+              <div className="text-4xl mb-3">🧮</div>
+              <p className="text-slate-400 font-medium">Enter your cost and sell price</p>
+              <p className="text-slate-600 text-sm mt-1">Results appear instantly as you type</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Placeholder({ icon, title, sub }) {
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold text-white mb-1">{icon} {title}</h1>
+      <p className="text-slate-400 text-sm mb-8">{sub}</p>
+      <div style={{background:'#0B1929',border:'1px solid #1A2E4A'}} className="rounded-xl p-10 text-center">
+        <div style={{background:'rgba(0,255,136,0.05)',border:'1px solid rgba(0,255,136,0.2)'}} className="inline-flex items-center gap-2 text-green-500 text-sm px-4 py-2 rounded-lg mb-4">
+          ⚡ Requires live backend
+        </div>
+        <p className="text-slate-400 mb-2">This feature streams real-time AI analysis from your Express server.</p>
+        <p className="text-slate-500 text-sm">Run <code style={{background:'#091526',padding:'2px 8px',borderRadius:'4px',color:'#00FF88'}}>npm run dev</code> and visit <code style={{background:'#091526',padding:'2px 8px',borderRadius:'4px',color:'#00FF88'}}>localhost:5173</code> to use it.</p>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [page, setPage] = useState('dashboard');
+  const nav = [['dashboard','📊','Dashboard'],['scanner','🔍','Scanner'],['supplier','📦','Supplier'],['calculator','💰','Calculator'],['competition','📈','Competition']];
+  return (
+    <div className="min-h-screen" style={{background:'#050D1A'}}>
+      <header style={{background:'rgba(5,13,26,0.95)',borderBottom:'1px solid #1A2E4A',position:'sticky',top:0,zIndex:50,backdropFilter:'blur(8px)'}}>
+        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={()=>setPage('dashboard')}>
+            <div style={{background:'rgba(0,255,136,0.1)',border:'1px solid rgba(0,255,136,0.3)',borderRadius:'8px',width:'32px',height:'32px',display:'flex',alignItems:'center',justifyContent:'center'}}>📡</div>
+            <span className="font-bold text-sm">Flip<span style={{background:'linear-gradient(90deg,#00FF88,#33FFa0)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Radar</span></span>
+          </div>
+          <nav className="flex items-center gap-1">
+            {nav.map(([id,icon,label]) => (
+              <button key={id} onClick={()=>setPage(id)} style={page===id?{background:'rgba(0,255,136,0.1)',color:'#00FF88'}:{color:'#94a3b8'}} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:text-white">
+                <span>{icon}</span><span className="hidden sm:block">{label}</span>
+              </button>
+            ))}
+          </nav>
+          <div style={{background:'rgba(0,255,136,0.1)',border:'1px solid rgba(0,255,136,0.3)',color:'#00FF88'}} className="text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer">⚡ Pro</div>
+        </div>
+      </header>
+      {page === 'dashboard'    && <Dashboard/>}
+      {page === 'scanner'      && <Placeholder icon="🔍" title="Product Trend Scanner" sub="Enter a niche and get 7 AI-analysed products with flip scores, margins, and key risks"/>}
+      {page === 'supplier'     && <Placeholder icon="📦" title="Supplier Finder" sub="Platform-by-platform sourcing playbooks for AliExpress, CJDropshipping, and Alibaba"/>}
+      {page === 'calculator'   && <Calculator/>}
+      {page === 'competition'  && <Placeholder icon="📈" title="Competition Analyser" sub="Market saturation scores, gap analysis, and enter/avoid verdicts"/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
